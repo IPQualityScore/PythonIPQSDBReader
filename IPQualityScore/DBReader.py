@@ -1,4 +1,3 @@
-
 import os
 from binascii import hexlify
 from socket import error, inet_aton, inet_pton, socket
@@ -28,6 +27,7 @@ class DBReader:
     record_bytes = None
     columns = []
     ipv6 = False
+    blacklistfile = False
 
     def __init__(self, filename:str):
         if not os.path.isfile(filename):
@@ -54,49 +54,48 @@ class DBReader:
         
         v_literal = self.IP2Literal(ip)
         position = 0
-
+        previous = {}
         file_position  =  self.tree_start + self.BASE_TREE_BYTES
-        while True:
+
+        # Loop over tree. Will abort if we try too many times.
+        for _ in range(257):
+            previous[position] = file_position
             if len(v_literal) <= position:
                 raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 8)")
-            
-            next = 0
-            try:
-                if v_literal[position] == "0":
-                    pos = self.ReadAt(file_position, self.TREE_BYTE_WIDTH)
-                    if len(pos) == 4:
-                        next = unpack("<L", pos)[0]
-                else:
-                    pos = self.ReadAt(file_position + 4, self.TREE_BYTE_WIDTH)
-                    if len(pos) == 4:
-                        next = unpack("<L", pos)[0]
 
-            except Exception:
-                raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 9)")
-            
-            try:
-                if next == 0:
-                    if v_literal[position] == "0":
-                        pos = self.ReadAt(file_position + 4, self.TREE_BYTE_WIDTH)
-                        if len(pos) == 4:
-                            next = unpack("<L", pos)[0]
-                        
-                        if next == 0:
-                            raise IPNotFoundException()
-                    else:
-                        pos = self.ReadAt(file_position, self.TREE_BYTE_WIDTH)
-                        if len(pos) == 4:
-                            next = unpack("<L", pos)[0]
+            if v_literal[position] == "0":
+                pos = self.ReadAt(file_position, self.TREE_BYTE_WIDTH)
+                if len(pos) == 4:
+                    file_position = unpack("<L", pos)[0]
+            else:
+                pos = self.ReadAt(file_position + 4, self.TREE_BYTE_WIDTH)
+                if len(pos) == 4:
+                    file_position = unpack("<L", pos)[0]
 
-                        if next == 0:
-                            raise IPNotFoundException()
-            except Exception:
-                raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 10)")
-            
-            file_position = next
+            if(self.blacklistfile == False):
+                if(file_position == 0):
+                    for i in range(position):
+                        if(v_literal[position - i] == "1"):
+                            l  = list(v_literal)
+                            l[position - i] = "0"
+                            v_literal = ''.join(l)
+
+                            for n in range(position - i + 1, len(v_literal)):
+                                l  = list(v_literal)
+                                l[n] = "1"
+                                v_literal = ''.join(l)
+                            
+                            position = position - i
+                            file_position = previous[position]
+                            break
+                    continue
+
             if(file_position < self.tree_end):
+                if(file_position == 0):
+                    break
                 position += 1
                 continue
+
             try:
                 raw = self.ReadAt(file_position, self.record_bytes)
             except Exception:
@@ -104,8 +103,11 @@ class DBReader:
 
             try:
                 return self.CreateRecord(raw)
+
             except Exception:
                 raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 12)")
+        raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 13)")
+        
     def GetColumns(self):
         return self.columns
 
@@ -140,9 +142,12 @@ class DBReader:
         if file_type.Has(BinaryOption.IPV6MAP):
             self.valid = True
             self.ipv6 = True
-        
+
         if file_type.Has(BinaryOption.BINARYDATA):
             self.binary_data = True
+
+        if file_type.Has(BinaryOption.BLACKLISTFILE):
+            self.blacklistfile = True
         
         if(self.valid == False):
             raise FileReaderException("Invalid file format, invalid first byte. EID 1.")
@@ -221,22 +226,27 @@ class DBReader:
                 value = unpack("<L", raw[current_byte:current_byte+4])[0]
                 record.ASN(int(value))
                 current_byte += 4
+
             elif column.Name() == "Latitude":
                 value = unpack("<f", raw[current_byte:current_byte+4])[0]
                 record.Latitude(float(value))
                 current_byte += 4
+
             elif column.Name() == "Longitude":
                 value = unpack("<f", raw[current_byte:current_byte+4])[0]
                 record.Longitude(float(value))
                 current_byte += 4
+
             elif column.Name() == "ZeroFraudScore":
                 value = unpack("B", raw[current_byte:current_byte+1])[0]
                 record.SetFraudScore(0, int(value))
                 current_byte += 1
+
             elif column.Name() == "OneFraudScore":
                 value = unpack("B", raw[current_byte:current_byte+1])[0]
-                record.ASN(float(value))
+                record.SetFraudScore(1, int(value))
                 current_byte += 1
+
             else:
                 if (column.Type()).Has(BinaryOption.STRINGDATA):
                     value = self.GetRangedStringValue(unpack("<L", raw[current_byte:current_byte+4])[0])
@@ -264,6 +274,7 @@ class DBReader:
         try:
             inet_pton(AF_INET, ip)
             return True
+
         except error:
             return False
 
@@ -271,7 +282,9 @@ class DBReader:
         try:
             inet_pton(AF_INET6, ip)
             return True
+
         except error:
             return False
+
     def __del__(self):
         self.handler.close()
