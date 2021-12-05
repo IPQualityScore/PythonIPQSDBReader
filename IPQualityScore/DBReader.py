@@ -1,3 +1,4 @@
+
 import os
 from binascii import hexlify
 from socket import error, inet_aton, inet_pton, socket
@@ -21,13 +22,7 @@ class DBReader:
     COLUNN_HEADER = "<P23xB" #"x%s/a23name/Cvalue" null 23null-padded_string UnsigedChar <x23xB
     HEADERS = "<BB3BHL"
 
-    handler  = None
-    tree_start = None
-    tree_end = None
-    record_bytes = None
-    columns = []
-    ipv6 = False
-    blacklistfile = False
+    
 
     def __init__(self, filename:str):
         if not os.path.isfile(filename):
@@ -37,6 +32,13 @@ class DBReader:
             self.handler = open(filename,'rb')
         except IOError:
             raise FileReaderException('Invalid or non existant file name specified. Please check the file and try again')
+
+        self.tree_start = None
+        self.tree_end = None
+        self.record_bytes = None
+        self.columns = []
+        self.ipv6 = False
+        self.blacklistfile = False
 
         self.SetupHeaders()
         self.SetupColumns()
@@ -63,7 +65,7 @@ class DBReader:
             if len(v_literal) <= position:
                 raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 8)")
 
-            if v_literal[position] == "0":
+            if v_literal[position] == 0:
                 pos = self.ReadAt(file_position, self.TREE_BYTE_WIDTH)
                 if len(pos) == 4:
                     file_position = unpack("<L", pos)[0]
@@ -75,15 +77,11 @@ class DBReader:
             if(self.blacklistfile == False):
                 if(file_position == 0):
                     for i in range(position):
-                        if(v_literal[position - i] == "1"):
-                            l  = list(v_literal)
-                            l[position - i] = "0"
-                            v_literal = ''.join(l)
+                        if(v_literal[position - i] == 1):
+                            l[position - i] = 0
 
                             for n in range(position - i + 1, len(v_literal)):
-                                l  = list(v_literal)
-                                l[n] = "1"
-                                v_literal = ''.join(l)
+                                l[n] = 1
                             
                             position = position - i
                             file_position = previous[position]
@@ -191,14 +189,13 @@ class DBReader:
         self.tree_end = tree['tree_bytes'] + self.tree_start
     
     def IP2Literal(self,ip):
-        result = ""
-        if(self.ipv6):
+        result = []
+        if (self.ipv6):
             for block in self.Expand(ip).split(":"):
-                result += bin(int(block,16))[2:]
+                for x in bin(int(block, 16))[2:] : result.append((x))
         else:
             for block in ip.split("."):
-                result += bin(int(block,10))[2:].zfill(8)
-
+                for x in bin(int(block, 10))[2:].zfill(8) : result.append(int(x))
         return result
 
     def CreateRecord(self,raw):
@@ -233,6 +230,7 @@ class DBReader:
                 current_byte += 4
 
             elif column.Name() == "Longitude":
+                
                 value = unpack("<f", raw[current_byte:current_byte+4])[0]
                 record.Longitude(float(value))
                 current_byte += 4
@@ -287,4 +285,5 @@ class DBReader:
             return False
 
     def __del__(self):
-        self.handler.close()
+        if self.handler:
+            self.handler.close()

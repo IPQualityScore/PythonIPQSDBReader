@@ -21,13 +21,11 @@ class BinaryOption:
     IPV6MAP             = 1 << 1
     BLACKLISTFILE       = 1 << 2
     BINARYDATA          = 1 << 7
-
     TREEDATA            = 1 << 2
     STRINGDATA          = 1 << 3
     SMALLINTDATA        = 1 << 4
     INTDATA             = 1 << 5
     FLOATDATA           = 1 << 6
-
     ISPROXY             = 1 << 0
     ISVPN               = 1 << 1
     ISTOR               = 1 << 2
@@ -36,7 +34,6 @@ class BinaryOption:
     RECENTABUSE         = 1 << 5
     ISBLACKLISTED       = 1 << 6
     ISPRIVATE           = 1 << 7
-
     ISMOBILE            = 1 << 0
     HASOPENPORTS        = 1 << 1
     ISHOSTINGPROVIDER   = 1 << 2
@@ -45,7 +42,6 @@ class BinaryOption:
     PUBLICACCESSPOINT   = 1 << 5
     RESERVEDONE         = 1 << 6
     RESERVEDTWO         = 1 << 7
-    
     RESERVEDTHREE       = 1 << 0
     RESERVEDFOUR        = 1 << 1
     RESERVEDFIVE        = 1 << 2
@@ -54,3 +50,4 @@ class BinaryOption:
     CONNECTIONTYPETHREE = 1 << 5
     ABUSEVELOCITYONE    = 1 << 6
     ABUSEVELOCITYTWO    = 1 << 7
+    
