@@ -2,35 +2,35 @@ from IPQualityScore.BinaryOption    import BinaryOption
 from IPQualityScore.Columns         import Column
 
 class IPQSRecord:
-    __fraudscore = {}
-    __Columns = []
-
-    __IsProxy           = False
-    __IsVPN             = False
-    __IsTOR             = False
-    __IsCrawler         = False
-    __IsBot             = False
-    __IsBlackListed     = False
-    __IsPrivate         = False
-    __IsMobile          = False
-    __RecentAbuse       = False
-    __HasOpenPorts      = False
-    __IsHostingProvider = False
-    __ActiveVPN         = False
-    __ActiveTOR         = False
-    __PublicAccessPoint = False
-    __ConnectionType    = 0
-    __AbuseVelocity     = 0
-    __fraudscore        = {}
-    __Country           = ""
-    __City              = ""
-    __Region            = ""
-    __ISP               = ""
-    __Organization      = ""
-    __Timezone          = ""
-    __Latitude          = 0.0
-    __Longitude         = 0.0
-    __ASN               = 0
+    def __init__(self):
+        self.__fraudscore = {}
+        self.__Columns = []  
+        self.__IsProxy           = False
+        self.__IsVPN             = False
+        self.__IsTOR             = False
+        self.__IsCrawler         = False
+        self.__IsBot             = False
+        self.__IsBlackListed     = False
+        self.__IsPrivate         = False
+        self.__IsMobile          = False
+        self.__RecentAbuse       = False
+        self.__HasOpenPorts      = False
+        self.__IsHostingProvider = False
+        self.__ActiveVPN         = False
+        self.__ActiveTOR         = False
+        self.__PublicAccessPoint = False
+        self.__ConnectionType    = 0
+        self.__AbuseVelocity     = 0
+        self.__fraudscore        = {}
+        self.__Country           = ""
+        self.__City              = ""
+        self.__Region            = ""
+        self.__ISP               = ""
+        self.__Organization      = ""
+        self.__Timezone          = ""
+        self.__Latitude          = 0.0
+        self.__Longitude         = 0.0
+        self.__ASN               = 0
 
     def IsProxy(self, value = None):
         if value != None:
