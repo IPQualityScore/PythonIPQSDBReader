@@ -78,10 +78,10 @@ class DBReader:
                 if(file_position == 0):
                     for i in range(position):
                         if(v_literal[position - i] == 1):
-                            l[position - i] = 0
+                            v_literal[position - i] = 0
 
                             for n in range(position - i + 1, len(v_literal)):
-                                l[n] = 1
+                                v_literal[n] = 1
                             
                             position = position - i
                             file_position = previous[position]
