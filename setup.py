@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="PythonIPQSDBReader",
-    version="1.0.3",
+    version="1.0.4",
     author="IPQualityScore",
     author_email="support@ipqualityscore.com",
     description="IPQualityScore IP Address Reputation & Proxy Detection DB Reader",
