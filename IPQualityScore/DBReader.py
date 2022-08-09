@@ -192,7 +192,7 @@ class DBReader:
         result = []
         if (self.ipv6):
             for block in self.Expand(ip).split(":"):
-                for x in bin(int(block, 16))[2:] : result.append((x))
+                for x in bin(int(block, 16))[2:].zfill(16) : result.append(int(x))
         else:
             for block in ip.split("."):
                 for x in bin(int(block, 10))[2:].zfill(8) : result.append(int(x))
