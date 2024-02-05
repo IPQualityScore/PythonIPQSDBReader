@@ -26,12 +26,12 @@ class DBReader:
 
     def __init__(self, filename:str):
         if not os.path.isfile(filename):
-            raise FileReaderException('Invalid or non existant file name specified. Please check the file and try again')
+            raise FileReaderException('Invalid or nonexistent file name specified. Please check the file and try again')
         
         try:
             self.handler = open(filename,'rb')
         except IOError:
-            raise FileReaderException('Invalid or non existant file name specified. Please check the file and try again')
+            raise FileReaderException('Invalid or nonexistent file name specified. Please check the file and try again')
 
         self.tree_start = None
         self.tree_end = None
@@ -46,13 +46,16 @@ class DBReader:
 
     def Fetch(self, ip:str):
         if not self.IsIPv4(ip) and not self.IsIPv6(ip):
-            raise FileReaderException("Attemtped to look up invalid IP address. Aborting.")
+            raise FileReaderException("Attempted to look up invalid IP address. Aborting.")
         
         if self.ipv6 and not self.IsIPv6(ip):
-            raise FileReaderException("Attemtped to look up IPv4 using IPv6 database file. Aborting.")
+            raise FileReaderException("Attempted to look up IPv4 using IPv6 database file. Aborting.")
         
         if self.ipv6 == False and not self.IsIPv4(ip):
-            raise FileReaderException("Attemtped to look up IPv6 using IPv4 database file. Aborting.")
+            raise FileReaderException("Attempted to look up IPv6 using IPv4 database file. Aborting.")
+        
+        if self.ipv6 == False and ip.startswith("0."):
+            raise FileReaderException("Attempted to look up an IP address in the 0.0.0.0/8 range. Aborting.")
         
         v_literal = self.IP2Literal(ip)
         position = 0
@@ -63,7 +66,7 @@ class DBReader:
         for _ in range(257):
             previous[position] = file_position
             if len(v_literal) <= position:
-                raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 8)")
+                raise IPNotFoundException("Invalid or nonexistent IP address specified for lookup. (EID: 8)")
 
             if v_literal[position] == 0:
                 pos = self.ReadAt(file_position, self.TREE_BYTE_WIDTH)
@@ -97,14 +100,14 @@ class DBReader:
             try:
                 raw = self.ReadAt(file_position, self.record_bytes)
             except Exception:
-                raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 11)")
+                raise IPNotFoundException("Invalid or nonexistent IP address specified for lookup. (EID: 11)")
 
             try:
                 return self.CreateRecord(raw)
 
             except Exception:
-                raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 12)")
-        raise IPNotFoundException("Invalid or nonexistant IP address specified for lookup. (EID: 13)")
+                raise IPNotFoundException("Invalid or nonexistent IP address specified for lookup. (EID: 12)")
+        raise IPNotFoundException("Invalid or nonexistent IP address specified for lookup. (EID: 13)")
         
     def GetColumns(self):
         return self.columns
