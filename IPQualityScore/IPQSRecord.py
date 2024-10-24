@@ -284,8 +284,3 @@ class IPQSRecord:
             return 2
         
         return 0
-    
-    def Hostname(self, value:str = None):
-        if value != None:
-            self.__hostname = value
-        return self.__hostname
