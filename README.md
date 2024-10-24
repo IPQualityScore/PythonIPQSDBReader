@@ -262,6 +262,15 @@ print(f"IPv6 Is Proxy: {ipv6_record.IsProxy()}")
                             </p>
                         </td>
                     </tr>
+		    <tr>
+						<td>record.Zipcode()</td>
+						<td>string</td>
+						<td>
+                            <p>
+                                Zip code of IP address if one is known. Otherwise "N/A".
+                            </p>
+                        </td>
+                    </tr>
                     <tr>
 						<td>record.ASN()</td>
 						<td>int</td>
