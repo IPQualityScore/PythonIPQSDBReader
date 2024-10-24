@@ -175,6 +175,16 @@ class IPQSRecord:
             self.__Organization = value
         return self.__Organization
     
+    def Zipcode(self, value = None):
+        if value != None:
+            self.__Zipcode = value
+        return self.__Zipcode
+
+    def Hostname(self, value = None):
+        if value != None:
+            self.__Hostname = value
+        return self.__Hostname
+    
     def Timezone(self, value = None):
         if value != None:
             self.__Timezone = value
@@ -274,8 +284,3 @@ class IPQSRecord:
             return 2
         
         return 0
-    
-    def Hostname(self, value:str = None):
-        if value != None:
-            self.__hostname = value
-        return self.__hostname
