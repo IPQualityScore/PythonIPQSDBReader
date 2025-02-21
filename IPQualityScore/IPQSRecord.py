@@ -132,21 +132,23 @@ class IPQSRecord:
     def SetFraudScore(self,strictness:int, value):
         self.__fraudscore[strictness] = value
     
-    def AbuseVelocityRaw(self, value:BinaryOption = None):
+    def AbuseVelocityRaw(self, value = None):
         if value != None:
-            self.__AbuseVelocity = value
-        return self.__AbuseVelocity
+            self.__AbuseVelocityRaw = self.ConvertAbuseVelocity(value)
+
+        return self.__AbuseVelocityRaw
     
     def AbuseVelocity(self, value:BinaryOption = None):
         if value != None:
-            self.__AbuseVelocity = self.ConvertAbuseVelocity(value)
+            self.__AbuseVelocityRaw = self.ConvertAbuseVelocity(value)
+
         items = {
             1: "low",
             2: "medium",
             3: "high",
         }
-        if self.__AbuseVelocity in items:
-            return items[self.__AbuseVelocity]
+        if self.__AbuseVelocityRaw in items:
+            return items[self.__AbuseVelocityRaw]
         else:
             return "none"
     
