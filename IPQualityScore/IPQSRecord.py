@@ -132,23 +132,21 @@ class IPQSRecord:
     def SetFraudScore(self,strictness:int, value):
         self.__fraudscore[strictness] = value
     
-    def AbuseVelocityRaw(self, value = None):
+    def AbuseVelocityRaw(self, value:BinaryOption = None):
         if value != None:
-            self.__AbuseVelocityRaw = self.ConvertAbuseVelocity(value)
-
-        return self.__AbuseVelocityRaw
+            self.__AbuseVelocity = value
+        return self.__AbuseVelocity
     
     def AbuseVelocity(self, value:BinaryOption = None):
         if value != None:
-            self.__AbuseVelocityRaw = self.ConvertAbuseVelocity(value)
-
+            self.__AbuseVelocity = self.ConvertAbuseVelocity(value)
         items = {
             1: "low",
             2: "medium",
             3: "high",
         }
-        if self.__AbuseVelocityRaw in items:
-            return items[self.__AbuseVelocityRaw]
+        if self.__AbuseVelocity in items:
+            return items[self.__AbuseVelocity]
         else:
             return "none"
     
@@ -176,16 +174,6 @@ class IPQSRecord:
         if value != None:
             self.__Organization = value
         return self.__Organization
-    
-    def Zipcode(self, value = None):
-        if value != None:
-            self.__Zipcode = value
-        return self.__Zipcode
-
-    def Hostname(self, value = None):
-        if value != None:
-            self.__Hostname = value
-        return self.__Hostname
     
     def Timezone(self, value = None):
         if value != None:
@@ -286,3 +274,8 @@ class IPQSRecord:
             return 2
         
         return 0
+
+    def Hostname(self, value:str = None):
+        if value != None:
+            self.__hostname = value
+        return self.__hostname

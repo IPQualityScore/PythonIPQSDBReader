@@ -14,14 +14,27 @@ import IPQualityScore.Utilities as Utilities
 
 class DBReader:
     READER_VERSION = 1
-    BASE_TREE_BYTES = 5
-    TREE_BYTE_WIDTH = 4
-    BASE_HEADER_BYTES = 11
+    SELECTED_READER_VERSION = 0
     BINARY_DATA_HEADER = "<BBB"
     NONBINARY_DATA_HEADER = "<B"
     COLUNN_HEADER = "<P23xB" #"x%s/a23name/Cvalue" null 23null-padded_string UnsigedChar <x23xB
-    HEADERS = "<BB3BHL"
 
+    SUPPORTED_READER_SPECS = {
+        1: {
+            "BASE_TREE_BYTES": 5,
+            "TREE_BYTE_WIDTH": 4,
+            "BASE_HEADER_BYTES": 11,
+            "HEADERS": "<BB3BHL",
+            "FORMAT": "<L"
+        },
+        2: {
+            "BASE_TREE_BYTES": 9,
+            "TREE_BYTE_WIDTH": 8,
+            "BASE_HEADER_BYTES": 16,
+            "HEADERS": "<BB3BHL5x",
+            "FORMAT": "<Q"
+        },
+    }
     
 
     def __init__(self, filename:str):
@@ -60,7 +73,7 @@ class DBReader:
         v_literal = self.IP2Literal(ip)
         position = 0
         previous = {}
-        file_position  =  self.tree_start + self.BASE_TREE_BYTES
+        file_position  =  self.tree_start + self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["BASE_TREE_BYTES"]
 
         # Loop over tree. Will abort if we try too many times.
         for _ in range(257):
@@ -69,13 +82,13 @@ class DBReader:
                 raise IPNotFoundException("Invalid or nonexistent IP address specified for lookup. (EID: 8)")
 
             if v_literal[position] == 0:
-                pos = self.ReadAt(file_position, self.TREE_BYTE_WIDTH)
-                if len(pos) == 4:
-                    file_position = unpack("<L", pos)[0]
+                pos = self.ReadAt(file_position, self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["TREE_BYTE_WIDTH"])
+                if len(pos) == self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["TREE_BYTE_WIDTH"]:
+                    file_position = unpack(self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["FORMAT"], pos)[0]
             else:
-                pos = self.ReadAt(file_position + 4, self.TREE_BYTE_WIDTH)
-                if len(pos) == 4:
-                    file_position = unpack("<L", pos)[0]
+                pos = self.ReadAt(file_position + self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["TREE_BYTE_WIDTH"], self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["TREE_BYTE_WIDTH"])
+                if len(pos) == self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["TREE_BYTE_WIDTH"]:
+                    file_position = unpack(self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["FORMAT"], pos)[0]
 
             if(self.blacklistfile == False):
                 if(file_position == 0):
@@ -127,9 +140,25 @@ class DBReader:
         return d
 
     def SetupHeaders(self):
+        # Grab version without consuming the header. Dogwater meet hotdogs.
+        try:
+            current_position = self.handler.tell()
+            self.handler.seek(1) # Version position
+            version = unpack("B", self.Read(1))[0]
+
+            self.handler.seek(current_position) # Restore to start
+
+            # Does version exist in our supported specs
+            if version not in self.SUPPORTED_READER_SPECS:
+                raise FileReaderException(f"Invalid file format, unsupported reader version EID 2.1")
+
+            self.SELECTED_READER_VERSION = version
+        except Exception:
+                raise FileReaderException("Invalid file format, cannot read version EID 2.0")
+
         try:
             headers ={}
-            headers["file_type"], headers["version"], headers["header_bytes1"], headers["header_bytes2"], headers["header_bytes3"], headers["record_bytes"], headers["file_bytes"] = unpack(self.HEADERS, self.Read(self.BASE_HEADER_BYTES))
+            headers["file_type"], headers["version"], headers["header_bytes1"], headers["header_bytes2"], headers["header_bytes3"], headers["record_bytes"], headers["file_bytes"] = unpack(self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["HEADERS"], self.Read(self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["BASE_HEADER_BYTES"]))
         except Exception:
             raise FileReaderException("Invalid file format, unable to read first 11 bytes. EID 1")
         if headers["file_type"] == None:
@@ -153,10 +182,6 @@ class DBReader:
         if(self.valid == False):
             raise FileReaderException("Invalid file format, invalid first byte. EID 1.")
         
-        if headers['version'] != DBReader.READER_VERSION:
-            raise FileReaderException("Invalid file version, EID 2.")
-        
-        
         self.tree_start = Utilities.uVarInt([headers['header_bytes1'], headers['header_bytes2'], headers['header_bytes3']])
         if self.tree_start == 0:
             raise FileReaderException("Invalid file format, invalid header bytes. EID 2")
@@ -170,7 +195,7 @@ class DBReader:
             raise FileReaderException("Invalid file format, invalid file size. EID 3")
     
     def SetupColumns(self):
-        length = self.tree_start - self.BASE_HEADER_BYTES
+        length = self.tree_start - self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["BASE_HEADER_BYTES"]
         column_data = self.Read(length)
         values = {}
         for i in range(0, int(length/24)):
@@ -250,10 +275,10 @@ class DBReader:
 
             else:
                 if (column.Type()).Has(BinaryOption.STRINGDATA):
-                    value = self.GetRangedStringValue(unpack("<L", raw[current_byte:current_byte+4])[0])
+                    value = self.GetRangedStringValue(unpack(self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["FORMAT"], raw[current_byte:current_byte+self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["TREE_BYTE_WIDTH"]])[0])
                     if type(value) == tuple:
                         value = value[0].decode('utf-8')
-                    current_byte += 4
+                    current_byte += self.SUPPORTED_READER_SPECS[self.SELECTED_READER_VERSION]["TREE_BYTE_WIDTH"]
                     try:
                         m = getattr(record, column.Name())
                         m(value)

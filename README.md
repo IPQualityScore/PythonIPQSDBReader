@@ -1,7 +1,7 @@
 <div class="documentation_overview">
 	<h1 class="doc-title">IPQualityScore IP Address Reputation &amp; Proxy Detection Python DB Reader</h1>
 	<div class="spacing-10"></div>
-	<h2 class="text-bold headerHR" style="font-size: 1.5em;">Flat File Version 1.0</h2>
+	<h2 class="text-bold headerHR" style="font-size: 1.5em;">Flat File Version 2.0</h2>
 	<div class="spacing-10"></div>
 	<p>
         Our flat file proxy detection database allows you to lookup important details about any IP address using a straight forward library. Simply install the reader, download a database and instantly check IP addresses against our large volume of data.
@@ -29,18 +29,8 @@ pip install git+https://github.com/IPQualityScore/PythonIPQSDBReader
             <pre class="highlight markdown"><code>
 from IPQualityScore.DBReader import DBReader
 
-ipv4_client = DBReader("IPQualityScore-IP-Reputation-Database-IPv4.ipqs")
-
-ipv4_record = ipv4_client.Fetch("8.8.0.0")
-
-print(f"IPv4 Is Proxy: {ipv4_record.IsProxy()}")
-
-
-ipv6_client = DBReader("IPQualityScore-IP-Reputation-Database-IPv6.ipqs")
-
-ipv6_record = ipv6_client.Fetch("2001:4860:4860::8888")
-
-print(f"IPv6 Is Proxy: {ipv6_record.IsProxy()}")
+u = DBReader("IPQualityScore-IP-Reputation-Database-IPv4.ipqs").Fetch("8.8.0.0")
+print(u.IsProxy())
             </code></pre>
         </div>
     </div>
@@ -259,15 +249,6 @@ print(f"IPv6 Is Proxy: {ipv6_record.IsProxy()}")
 						<td>
                             <p>
                                 Organization if one is known. Can be parent company or sub company of the listed ISP. Otherwise "N/A".
-                            </p>
-                        </td>
-                    </tr>
-		    <tr>
-						<td>record.Zipcode()</td>
-						<td>string</td>
-						<td>
-                            <p>
-                                Zip code of IP address if one is known. Otherwise "N/A".
                             </p>
                         </td>
                     </tr>
