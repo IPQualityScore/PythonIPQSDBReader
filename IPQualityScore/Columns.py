@@ -17,18 +17,18 @@ class Column:
         C.Value(value)
 
         return C
-    
+
     def Name(self, value = None):
-        if value != None:
+        if value is not None:
             self.__Name = value
         return self.__Name
 
-    def Type(self, value:BinaryOption = None):
-        if value != None:
+    def Type(self, value:BinaryOption|None = None):
+        if value is not None:
             self.__Type  = value
         return self.__Type
-    
+
     def Value(self, value = None):
-        if value != None:
+        if value is not None:
             self.__Value = value
         return self.__Value
