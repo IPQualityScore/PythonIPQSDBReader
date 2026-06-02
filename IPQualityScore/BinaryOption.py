@@ -40,11 +40,13 @@ class BinaryOption:
     ACTIVEVPN           = 1 << 3
     ACTIVETOR           = 1 << 4
     PUBLICACCESSPOINT   = 1 << 5
-    RESERVEDONE         = 1 << 6
-    RESERVEDTWO         = 1 << 7
-    RESERVEDTHREE       = 1 << 0
-    RESERVEDFOUR        = 1 << 1
-    RESERVEDFIVE        = 1 << 2
+    FREQUENTABUSER      = 1 << 6
+    TRUSTEDAPPLICATION  = 1 << 7
+
+	# reserved bit three
+    SHARED_IP           = 1 << 0
+    SECYRUTYSCANNER     = 1 << 1
+    DYNAMIC_IP          = 1 << 2
     CONNECTIONTYPEONE   = 1 << 3
     CONNECTIONTYPETWO   = 1 << 4
     CONNECTIONTYPETHREE = 1 << 5

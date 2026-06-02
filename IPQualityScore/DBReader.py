@@ -234,8 +234,10 @@ class DBReader:
         if self.binary_data:
             record.ParseFirstByte(BinaryOption.Create(bdata['one']))
             record.ParseSecondByte(BinaryOption.Create(bdata['two']))
-            
+
             third = BinaryOption.Create(bdata['three'])
+            record.ParseThirdByte(third)
+
             record.ConnectionTypeRaw(third)
             record.AbuseVelocityRaw(third)
             current_byte = 3

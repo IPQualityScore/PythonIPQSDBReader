@@ -102,8 +102,33 @@ class IPQSRecord:
             self.__PublicAccessPoint = value
         return self.__PublicAccessPoint
 
-    def ConnectionTypeRaw(self, value = None):
-        if value != None:
+    def FrequentAbuser(self, value: bool|None = None) -> bool:
+        if value is not None:
+            self.__FrequentAbuser = value
+        return self.__FrequentAbuser
+
+    def TrustedApplication(self, value: bool|None = None) -> bool:
+        if value is not None:
+            self.__TrustedApplication = value
+        return self.__TrustedApplication
+
+    def SecurityScanner(self, value: bool|None = None) -> bool:
+        if value is not None:
+            self.__SecurityScanner = value
+        return self.__SecurityScanner
+
+    def SharedIP(self, value: bool|None = None) -> bool:
+        if value is not None:
+            self.__SharedIP = value
+        return self.__SharedIP
+
+    def DynamicIP(self, value: bool|None = None) -> bool:
+        if value is not None:
+            self.__DynamicIP = value
+        return self.__DynamicIP
+
+    def ConnectionTypeRaw(self, value:BinaryOption|None = None) -> int:
+        if value is not None:
             self.__ConnectionTypeRaw = self.ConvertConnectionType(value)
         return self.__ConnectionTypeRaw
     
@@ -244,8 +269,24 @@ class IPQSRecord:
 
         if value.Has(BinaryOption.PUBLICACCESSPOINT):
             self.__PublicAccessPoint = True
-    
-    def ConvertConnectionType(self, value:BinaryOption):
+
+        if value.Has(BinaryOption.FREQUENTABUSER):
+            self.__FrequentAbuser = True
+
+        if value.Has(BinaryOption.TRUSTEDAPPLICATION):
+            self.__TrustedApplication = True
+
+    def ParseThirdByte(self, value:BinaryOption):
+        if value.Has(BinaryOption.SHARED_IP):
+            self.__SharedIP = True
+
+        if value.Has(BinaryOption.SECYRUTYSCANNER):
+            self.__SecurityScanner = True
+
+        if value.Has(BinaryOption.DYNAMIC_IP):
+            self.__DynamicIP = True
+
+    def ConvertConnectionType(self, value: BinaryOption) -> int:
         if value.Has(BinaryOption.CONNECTIONTYPETHREE):
             if value.Has(BinaryOption.CONNECTIONTYPETWO):
                 return 3
