@@ -2,6 +2,8 @@ import unittest
 import io
 from struct import pack
 from unittest.mock import Mock, patch
+
+from IPQualityScore import Utilities
 from IPQualityScore.DBReader import DBReader
 import IPQualityScore.DBReader as dbreader_module
 
@@ -167,7 +169,6 @@ class DBReaderV2HeaderTests(unittest.TestCase):
         self.assertEqual(reader.tree_start, 664)
         self.assertEqual(reader.record_bytes, 65)
 
-
 class DBReaderTreeHeaderTests(unittest.TestCase):
     def make_reader(self, version, tree_start, tree_header):
         reader = DBReader.__new__(DBReader)
@@ -200,6 +201,44 @@ class DBReaderTreeHeaderTests(unittest.TestCase):
             reader.tree_end - reader.tree_start,
             tree_size,
         )
+
+class UtilitiesVarIntTests(unittest.TestCase):
+    def test_uvarint_decodes_known_values(self):
+        cases = [
+            (b"\x00", 0),
+            (b"\x7f", 127),
+            (b"\x80\x01", 128),
+            (b"\x98\x02\x00\x00", 280),
+            (b"\xac\x02", 300),
+            (b"\x80\x81\x01", 16512),
+        ]
+
+        for encoded, expected in cases:
+            with self.subTest(encoded=encoded.hex()):
+                self.assertEqual(
+                    Utilities.uVarInt(encoded),
+                    expected,
+                )
+
+class DBReaderV2HeaderTests(unittest.TestCase):
+    def test_v2_header_decodes_varint_tree_start(self):
+        raw_header = bytes.fromhex(
+            "81 02 98 02 00 00 41 00 ee c7 a3 e5 03 00 00 00"
+        )
+
+        reader = DBReader.__new__(DBReader)
+        reader.handler = io.BytesIO(raw_header)
+        self.addCleanup(reader.handler.close)
+        reader.SELECTED_READER_VERSION = 2
+        reader.valid = False
+        reader.ipv6 = False
+        reader.blacklistfile = False
+
+        reader.SetupHeaders()
+
+        self.assertEqual(reader.tree_start, 280)
+        self.assertEqual(reader.record_bytes, 65)
+        self.assertEqual(reader.handler.tell(), 16)
 
 if __name__ == '__main__':
     unittest.main()

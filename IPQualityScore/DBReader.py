@@ -40,7 +40,7 @@ class DBReader:
             BASE_TREE_BYTES = 9,
             TREE_BYTE_WIDTH = 8,
             BASE_HEADER_BYTES = 16,
-            HEADERS = "<BBLHQ",
+            HEADERS = "<BB4sHQ",
             FORMAT = "<Q"
         ),
     }
@@ -221,7 +221,7 @@ class DBReader:
                 headers["header_bytes3"],
             ])
         else:
-            self.tree_start = headers["tree_start"]
+            self.tree_start = Utilities.uVarInt(headers["tree_start"])
         
         if self.tree_start == 0:
             raise FileReaderException("Invalid file format, invalid header bytes. EID 2")
